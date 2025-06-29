@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # true
 
 How to start the true application
@@ -11,3 +12,6 @@ Health Check
 ---
 
 To see your applications health enter url `http://localhost:8081/healthcheck`
+=======
+# ECommerceOrderingSystem
+>>>>>>> d86b9f429170d3b314bdba61a9eef5df7b5035a6
