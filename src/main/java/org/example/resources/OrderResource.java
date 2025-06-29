@@ -1,0 +1,70 @@
+package org.example.resources;
+
+
+import io.dropwizard.auth.Auth;
+import io.dropwizard.hibernate.UnitOfWork;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import lombok.extern.slf4j.Slf4j;
+import org.example.api.PlaceOrderRequestDTO;
+import org.example.auth.UserPrincipal;
+import org.example.core.OrderService;
+import org.example.db.Order;
+
+import java.util.List;
+
+@Path("/api/orders")
+@Slf4j
+public class OrderResource {
+    private final OrderService orderService;
+
+    public OrderResource(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
+    @UnitOfWork
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response placeOrder(PlaceOrderRequestDTO placeOrderRequestDTO, @Auth UserPrincipal user) {
+        placeOrderRequestDTO.setUserId(user.getUserId());
+        Order order = orderService.placeOrder(placeOrderRequestDTO);
+        return Response.status(Response.Status.CREATED)
+                .entity(order)
+                .build();
+    }
+
+    @UnitOfWork
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllOrders() {
+        List<Order> orders = orderService.getAllOrders();
+        return Response.ok(orders)
+                .build();
+    }
+
+    @UnitOfWork
+    @Path("/{userId}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getOrdersByUserId(@PathParam("userId") Long userId) {
+        List<Order> orders = orderService.getOrdersByUserId(userId);
+        if (orders.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.status(Response.Status.OK)
+                .entity(orders)
+                .build();
+    }
+
+    @UnitOfWork
+    @Path("/{orderId}")
+    @DELETE
+    public Response cancelOwnOrder(@PathParam("orderId") Long orderId, @Auth UserPrincipal user) {
+        orderService.deleteOrderById(orderId, user.getUserId());
+        return Response.status(Response.Status.NO_CONTENT)
+                .build();
+    }
+
+}
