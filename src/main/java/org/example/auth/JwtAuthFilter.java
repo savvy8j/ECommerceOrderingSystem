@@ -2,6 +2,7 @@ package org.example.auth;
 
 
 import io.dropwizard.auth.AuthFilter;
+import jakarta.annotation.Priority;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
@@ -9,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.security.Principal;
 
+@Priority(1)
 public class JwtAuthFilter<P extends Principal> extends AuthFilter<String, P> {
 
     @Override

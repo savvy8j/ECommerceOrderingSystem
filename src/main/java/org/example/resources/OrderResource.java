@@ -39,6 +39,7 @@ public class OrderResource {
 
     @UnitOfWork
     @Path("/admin")
+    @RolesAllowed("ROLE_ADMIN")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllOrders() {
@@ -48,7 +49,7 @@ public class OrderResource {
     }
 
     @UnitOfWork
-    @RolesAllowed("CUSTOMER")
+    @RolesAllowed("ROLE_CUSTOMER")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getOrdersByUserId(@Auth UserPrincipal user) {
