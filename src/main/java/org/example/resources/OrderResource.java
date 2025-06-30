@@ -3,6 +3,7 @@ package org.example.resources;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -35,7 +36,9 @@ public class OrderResource {
                 .build();
     }
 
+
     @UnitOfWork
+    @Path("/admin")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllOrders() {
@@ -45,11 +48,11 @@ public class OrderResource {
     }
 
     @UnitOfWork
-    @Path("/{userId}")
+    @RolesAllowed("CUSTOMER")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getOrdersByUserId(@PathParam("userId") Long userId) {
-        List<Order> orders = orderService.getOrdersByUserId(userId);
+    public Response getOrdersByUserId(@Auth UserPrincipal user) {
+        List<Order> orders = orderService.getOrdersByUserId(user.getUserId());
         if (orders.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -62,9 +65,22 @@ public class OrderResource {
     @Path("/{orderId}")
     @DELETE
     public Response cancelOwnOrder(@PathParam("orderId") Long orderId, @Auth UserPrincipal user) {
-        orderService.deleteOrderById(orderId, user.getUserId());
+        orderService.deleteOrderById(orderId, user.getUserId(), false);
         return Response.status(Response.Status.NO_CONTENT)
                 .build();
+    }
+
+    @UnitOfWork
+    @Path("/admin/{orderId}")
+    @DELETE
+    @RolesAllowed("ROLE_ADMIN")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response cancelAnyOrder(
+            @PathParam("orderId") Long orderId,
+            @Auth UserPrincipal user
+    ) {
+        orderService.deleteOrderById(orderId, user.getUserId(), true);
+        return Response.noContent().build();
     }
 
 }

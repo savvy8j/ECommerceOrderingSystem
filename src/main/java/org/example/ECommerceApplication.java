@@ -9,11 +9,13 @@ import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
 import org.example.auth.JwtAuthFilter;
 import org.example.auth.JwtAuthenticator;
+import org.example.auth.RoleAuthorizer;
 import org.example.auth.UserPrincipal;
 import org.example.core.OrderService;
 import org.example.core.ProductService;
 import org.example.core.UserService;
 import org.example.db.*;
+import org.example.exception.GenericExceptionMapper;
 import org.example.exception.GlobalExceptionMapper;
 import org.example.exception.IllegalArgumentExceptionMapper;
 import org.example.exception.ProductNotFoundExceptionMappper;
@@ -58,7 +60,7 @@ public class ECommerceApplication extends Application<ECommerceConfiguration> {
 
         environment.jersey().register(
                 new OrderResource(new OrderService(new OrderDAO(hibernate.getSessionFactory()), new ProductService(new ProductDAO(hibernate.getSessionFactory()))
-                        )
+                )
                 )
         );
         environment.jersey().register(new ProductNotFoundExceptionMappper());
@@ -67,10 +69,12 @@ public class ECommerceApplication extends Application<ECommerceConfiguration> {
 
         environment.jersey().register(new GlobalExceptionMapper());
 
+        environment.jersey().register(new GenericExceptionMapper());
 
         environment.jersey().register(new AuthDynamicFeature(new JwtAuthFilter.Builder<UserPrincipal>()
                 .setAuthenticator(new JwtAuthenticator())
-                        .setRealm("realm-123").buildAuthFilter()));
+                .setAuthorizer(new RoleAuthorizer())
+                .setRealm("realm-123").buildAuthFilter()));
         environment.jersey().register(new AuthValueFactoryProvider.Binder<>(UserPrincipal.class));
         environment.jersey().register(RolesAllowedDynamicFeature.class);
 
