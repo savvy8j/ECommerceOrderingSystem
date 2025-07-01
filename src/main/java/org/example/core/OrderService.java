@@ -1,6 +1,7 @@
 package org.example.core;
 
 import org.example.api.PlaceOrderRequestDTO;
+import org.example.api.PromoUsageDTO;
 import org.example.db.*;
 import org.example.exception.OrderFailedException;
 
@@ -14,10 +15,12 @@ public class OrderService {
 
 
     private final ProductService productService;
+    private final PromoService promoService;
 
-    public OrderService(OrderDAO orderDAO, ProductService productService) {
+    public OrderService(OrderDAO orderDAO, ProductService productService, PromoService promoService) {
         this.orderDAO = orderDAO;
         this.productService = productService;
+        this.promoService = promoService;
     }
 
     public List<Order> getOrdersByUserId(Long userId) {
@@ -63,13 +66,82 @@ public class OrderService {
             totalPrice[0] += price;
         });
 
+        double discount = 0.0;
 
+        if(placeOrderRequestDTO.getPromoCode() != null) {
+            PromoCode promoCode = promoService.getPromocode(placeOrderRequestDTO.getPromoCode());
+            if(!promoCode.isActive()) {
+                throw new OrderFailedException("Promo code is inactive");
+            }
+            LocalDate todayDate = LocalDate.now();
+            if(todayDate.isBefore(promoCode.getStartDate()) || todayDate.isAfter(promoCode.getEndDate())) {
+                throw new OrderFailedException("Promo code is expired");
+            }
+
+            Long totalUsage = promoService.getTotalPromoUsage(promoCode.getId());
+            if (totalUsage == null) {
+                totalUsage = 0L;
+            }
+            if ( totalUsage >= promoCode.getMaxUsageLimit()) {
+                throw new OrderFailedException("Max Promo Usage limit exceeded");
+            }
+
+            Integer userUsage = promoService.getUsageCountForCustomer(promoCode.getId(), placeOrderRequestDTO.getUserId());
+            if (userUsage >= promoCode.getMaxUsagePerCustomer()) {
+                throw new OrderFailedException("Promo code usage limit exceeded for this customer");
+            }
+
+
+            if(promoCode.getPromoType() == PromoType.PERCENTAGE)
+            {
+                discount = totalPrice[0] * promoCode.getDiscount()/100.0;
+                if(discount >promoCode.getMaxDiscount())
+                    discount = promoCode.getMaxDiscount();
+            }
+            else if(promoCode.getPromoType() == PromoType.FLAT)
+            {
+                discount = promoCode.getDiscount();
+                if(discount >promoCode.getMaxDiscount())
+                    discount = promoCode.getMaxDiscount();
+            }
+            totalPrice[0] -=discount;
+            if(totalPrice[0] < 0){
+                totalPrice[0] = 0;}
+            Optional<PromoUsage> promoUsageOpt = promoService.getPromoUsageByUser(
+                    promoCode.getId(),
+                    placeOrderRequestDTO.getUserId()
+            );
+
+            PromoUsage promoUsage;
+
+
+            if (promoUsageOpt.isPresent()) {
+                promoUsage = promoUsageOpt.get();
+                promoUsage.setUsageCount(promoUsage.getUsageCount() + 1);
+            } else {
+                promoUsage = new PromoUsage();
+                promoUsage.setUsageCount(1);
+                promoUsage.setUserId(placeOrderRequestDTO.getUserId());
+                promoUsage.setPromocode(promoCode);
+            }
+
+            PromoUsageDTO promoUsageDTO = new PromoUsageDTO();
+            promoUsageDTO.setPromoCodeId(promoCode.getId());
+            promoUsageDTO.setUserId(promoUsage.getUserId());
+            promoUsageDTO.setUsageCount(promoUsage.getUsageCount());
+            promoService.saveOrUpdatePromoUsage(promoUsageDTO);
+            order.setMessage("Placed Order with PromoCode"+ promoCode.getCode());
+
+
+
+        }
         order.setStatus(Status.PLACED);
         order.setUserId(placeOrderRequestDTO.getUserId());
-        order.setMessage("Placed Order");
+
         order.setOrderDate(LocalDate.now());
         order.setOrderItems(orderItems);
         order.setTotalAmount(totalPrice[0]);
+
 
         return orderDAO.saveOrUpdate(order);
 

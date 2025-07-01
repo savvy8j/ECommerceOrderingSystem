@@ -30,7 +30,7 @@ public class ECommerceApplication extends Application<ECommerceConfiguration> {
     }
 
 
-    private final HibernateBundle<ECommerceConfiguration> hibernate = new HibernateBundle<ECommerceConfiguration>(User.class, Product.class, Order.class, OrderItem.class, Role.class) {
+    private final HibernateBundle<ECommerceConfiguration> hibernate = new HibernateBundle<ECommerceConfiguration>(User.class, Product.class, Order.class, OrderItem.class, Role.class,PromoCode.class,PromoUsage.class) {
         @Override
         public DataSourceFactory getDataSourceFactory(ECommerceConfiguration configuration) {
             return configuration.getDatabase();
@@ -56,14 +56,22 @@ public class ECommerceApplication extends Application<ECommerceConfiguration> {
         environment.jersey().register(new ProductResource(new ProductService(new ProductDAO(hibernate.getSessionFactory()))));
 
         environment.jersey().register(new UserResource(new UserService(new UserDAO(hibernate.getSessionFactory()))));
-
         environment.jersey().register(
-                new OrderResource(new OrderService(new OrderDAO(hibernate.getSessionFactory()), new ProductService(new ProductDAO(hibernate.getSessionFactory()))
-                )
+                new OrderResource(
+                        new OrderService(
+                                new OrderDAO(hibernate.getSessionFactory()),
+                                new ProductService(
+                                        new ProductDAO(hibernate.getSessionFactory())
+                                ),
+                                new PromoService(
+                                        new PromoDAO(hibernate.getSessionFactory()),
+                                        new PromoUsageDAO(hibernate.getSessionFactory())
+                                )
+                        )
                 )
         );
 
-        environment.jersey().register(new PromoResource(new PromoService(new PromoDAO(hibernate.getSessionFactory()))));
+        environment.jersey().register(new PromoResource(new PromoService(new PromoDAO(hibernate.getSessionFactory()),new PromoUsageDAO(hibernate.getSessionFactory()))));
 
         environment.jersey().register(new ProductNotFoundExceptionMappper());
 
