@@ -49,9 +49,10 @@ public class ProductService {
 
 
     public void delete(Long id) {
+
         findById(id);
         productDAO.delete(id);
-
     }
+
 
 }

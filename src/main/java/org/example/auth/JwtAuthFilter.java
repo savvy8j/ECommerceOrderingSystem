@@ -10,7 +10,7 @@ import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.security.Principal;
 
-@Priority(1)
+@Priority(1)//first should go in authfilter
 public class JwtAuthFilter<P extends Principal> extends AuthFilter<String, P> {
 
     @Override

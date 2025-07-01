@@ -2,6 +2,7 @@ package org.example.resources;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -26,7 +27,6 @@ public class ProductResource {
     }
 
 
-
     @UnitOfWork
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -43,11 +43,12 @@ public class ProductResource {
     }
 
     @UnitOfWork
+    @Path("/admin")
+    @RolesAllowed("ROLE_ADMIN")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createProduct(Product product) {
-
         return Response.status(Response.Status.CREATED)
                 .entity(productService.saveOrUpdate(product))
                 .build();
@@ -55,18 +56,20 @@ public class ProductResource {
 
 
     @UnitOfWork
-    @Path("/{id}")
+    @RolesAllowed("ROLE_ADMIN")
+    @Path("/admin/{id}")
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Product updateProduct(Product product,@PathParam("id")  Long id) {
+    public Product updateProduct(Product product, @PathParam("id") Long id) {
         product.setProductId(id);
         return productService.saveOrUpdate(product);
-     }
+    }
 
     @UnitOfWork
+    @RolesAllowed("ROLE_ADMIN")
     @PATCH
-    @Path("{id}/stock")
+    @Path("/admin/{id}/stock")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Product updateProductStock(@PathParam("id") Long id, StockUpdateDTO request) {
@@ -74,12 +77,11 @@ public class ProductResource {
     }
 
 
-
-
     @UnitOfWork
-    @Path("/{id}")
+    @RolesAllowed("ROLE_ADMIN")
+    @Path("/admin/{id}")
     @DELETE
-    public void deleteProduct(@PathParam("id")  Long id) {
+    public void deleteProduct(@PathParam("id") Long id) {
         productService.delete(id);
     }
 

@@ -76,6 +76,31 @@ public class OrderService {
 
     }
 
+    public void deleteUserOrderById(Long orderId, Long userId) {
+        Order order = orderDAO.findByOrderId(orderId)
+                .orElseThrow(() -> new OrderFailedException("Order not found"));
+
+        if (order.getStatus() == Status.CANCELLED) {
+            throw new RuntimeException("Order can't be cancelled");
+        }
+
+        if (!order.getUserId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to cancel this order.");
+        }
+
+        order.getOrderItems().forEach(requestedOrderItem -> {
+            Product product = productService.findById(requestedOrderItem.getProductId());
+            product.setQuantityAvailable(product.getQuantityAvailable() + requestedOrderItem.getQuantityOrdered());
+            productService.saveOrUpdate(product);
+        });
+
+        order.setStatus(Status.CANCELLED);
+        order.setMessage("Order cancelled successfully");
+
+        orderDAO.saveOrUpdate(order);
+    }
+
+
     public void deleteOrderById(Long orderId,Long userId,boolean isAdmin) {
         Order order = orderDAO.findByOrderId(orderId)
                 .orElseThrow(() -> new OrderFailedException("Order not found"));
@@ -101,32 +126,5 @@ public class OrderService {
 
     }
 
-//    public void cancelAnyOrder(Long orderId){
-//        Order order = orderDAO.findByOrderId(orderId)
-//                .orElseThrow(() -> new OrderFailedException("Order not found"));
-//        if(order.getStatus() == Status.CANCELLED) {
-//            throw new RuntimeException("Order cant be cancelled");
-//        }
-//        order.getOrderItems().forEach(requestedOrderItem -> {
-//
-//        });
-//    }
-
-
-//
-//    public void cancelOrder(Long orderId) {
-//        Order orderNotFound = orderDAO.findByOrderId(orderId)
-//                .orElseThrow(() -> new RuntimeException("Order not found"));
-//        if (orderNotFound.getStatus() != Status.PLACED) {
-//            throw new RuntimeException("Order status is not Placed,can't cancel");
-//        }
-//
-//        Optional<Order> byOrderId = orderDAO.findByOrderId(orderId);
-//        Order order = byOrderId
-//                .orElseThrow(() -> new IllegalArgumentException("Order not found for id: " + orderId));
-//
-//        order.setStatus(Status.CANCELLED);
-//
-//    }
 }
 

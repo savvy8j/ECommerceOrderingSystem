@@ -26,6 +26,7 @@ public class OrderResource {
 
     @UnitOfWork
     @POST
+    @RolesAllowed("ROLE_CUSTOMER")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response placeOrder(PlaceOrderRequestDTO placeOrderRequestDTO, @Auth UserPrincipal user) {
@@ -65,8 +66,9 @@ public class OrderResource {
     @UnitOfWork
     @Path("/{orderId}")
     @DELETE
+    @RolesAllowed("ROLE_CUSTOMER")
     public Response cancelOwnOrder(@PathParam("orderId") Long orderId, @Auth UserPrincipal user) {
-        orderService.deleteOrderById(orderId, user.getUserId(), false);
+        orderService.deleteUserOrderById(orderId, user.getUserId());
         return Response.status(Response.Status.NO_CONTENT)
                 .build();
     }
@@ -81,7 +83,8 @@ public class OrderResource {
             @Auth UserPrincipal user
     ) {
         orderService.deleteOrderById(orderId, user.getUserId(), true);
-        return Response.noContent().build();
+        return Response.status(Response.Status.NO_CONTENT)
+                .build();
     }
 
 }

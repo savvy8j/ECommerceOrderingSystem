@@ -1,18 +1,18 @@
 ---
+logging:
+  level: INFO
+  loggers:
+    org.example: DEBUG
+#
 #logging:
 #  level: DEBUG
 #  loggers:
-#    org.example: DEBUG
-
-logging:
-  level: DEBUG
-  loggers:
-    "io.dropwizard": DEBUG
-    "com.yourapp": DEBUG
-  appenders:
-    - type: console
-      threshold: DEBUG
-      logFormat: "%-5level [%d{ISO8601}] [%logger] %message%n%throwable"
+#    "io.dropwizard": DEBUG
+#    "com.yourapp": DEBUG
+#  appenders:
+#    - type: console
+#      threshold: DEBUG
+#      logFormat: "%-5level [%d{ISO8601}] [%logger] %message%n%throwable"
 
 database:
   driverClass: org.postgresql.Driver
@@ -23,7 +23,7 @@ database:
   properties:
     charSet: UTF-8
     hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
-    hibernate.hbm2ddl.auto: update
+    hibernate.hbm2ddl.auto: create
     hibernate.show_sql: true
 
 

@@ -30,10 +30,6 @@ public class OrderDAO extends AbstractDAO<Order> {
         return Optional.ofNullable(get(orderId));
     }
 
-    public void deleteByOrderId(Long orderId) {
-        Optional<Order> optionalOrder = findByOrderId(orderId);
-        optionalOrder.ifPresent(order -> currentSession().remove(order));
-    }
 
 
 }

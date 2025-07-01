@@ -13,14 +13,13 @@ import org.example.auth.RoleAuthorizer;
 import org.example.auth.UserPrincipal;
 import org.example.core.OrderService;
 import org.example.core.ProductService;
+import org.example.core.PromoService;
 import org.example.core.UserService;
 import org.example.db.*;
-import org.example.exception.GenericExceptionMapper;
-import org.example.exception.GlobalExceptionMapper;
-import org.example.exception.IllegalArgumentExceptionMapper;
-import org.example.exception.ProductNotFoundExceptionMappper;
+import org.example.exception.*;
 import org.example.resources.OrderResource;
 import org.example.resources.ProductResource;
+import org.example.resources.PromoResource;
 import org.example.resources.UserResource;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
@@ -63,6 +62,9 @@ public class ECommerceApplication extends Application<ECommerceConfiguration> {
                 )
                 )
         );
+
+        environment.jersey().register(new PromoResource(new PromoService(new PromoDAO(hibernate.getSessionFactory()))));
+
         environment.jersey().register(new ProductNotFoundExceptionMappper());
 
         environment.jersey().register(new IllegalArgumentExceptionMapper());
@@ -70,6 +72,10 @@ public class ECommerceApplication extends Application<ECommerceConfiguration> {
         environment.jersey().register(new GlobalExceptionMapper());
 
         environment.jersey().register(new GenericExceptionMapper());
+
+        environment.jersey().register(new OrderFailedExceptionMapper());
+
+
 
         environment.jersey().register(new AuthDynamicFeature(new JwtAuthFilter.Builder<UserPrincipal>()
                 .setAuthenticator(new JwtAuthenticator())
