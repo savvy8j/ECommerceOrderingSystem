@@ -1,6 +1,7 @@
 package org.example.resources;
 
 import io.dropwizard.hibernate.UnitOfWork;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -14,7 +15,7 @@ import org.example.db.User;
 
 @Path("/api/users")
 @Slf4j
-
+@Tag(name ="AuthenticationResource")
 public class UserResource {
     private final UserService userService;
 

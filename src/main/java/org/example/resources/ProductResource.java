@@ -2,6 +2,7 @@ package org.example.resources;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.hibernate.UnitOfWork;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Slf4j
 @Path("/api/products")
+@Tag(name ="ProductResource")
 public class ProductResource {
 
     private final ProductService productService;

@@ -18,7 +18,7 @@ public class PromoUsageDAO extends AbstractDAO<PromoUsage> {
 
     public Integer getUsageCountForCustomer(Long promoCodeId, Long userId) {
         return currentSession().createQuery(
-                        "SELECT u.usageCount FROM PromoUsage u WHERE u.promocode.id = :promoCodeId AND u.userId = :userId",
+                        " SELECT u.usageCount FROM PromoUsage  u WHERE u.promocode.id = :promoCodeId AND u.userId = :userId",
                         Integer.class
                 )
                 .setParameter("promoCodeId", promoCodeId)

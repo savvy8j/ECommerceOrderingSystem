@@ -7,6 +7,8 @@ import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.example.auth.JwtAuthFilter;
 import org.example.auth.JwtAuthenticator;
 import org.example.auth.RoleAuthorizer;
@@ -46,6 +48,12 @@ public class ECommerceApplication extends Application<ECommerceConfiguration> {
     public void initialize(final Bootstrap<ECommerceConfiguration> bootstrap) {
         // TODO: application initialization
         bootstrap.addBundle(hibernate);
+        bootstrap.addBundle(new SwaggerBundle<ECommerceConfiguration>() {
+            @Override
+            protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(ECommerceConfiguration configuration) {
+                return configuration.getSwagger();
+            }
+        });
     }
 
     @Override

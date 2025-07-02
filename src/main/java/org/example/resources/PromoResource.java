@@ -1,6 +1,7 @@
 package org.example.resources;
 
 import io.dropwizard.hibernate.UnitOfWork;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -14,6 +15,7 @@ import org.example.db.PromoCode;
 
 @Path("/api/promocodes")
 @Slf4j
+@Tag(name ="PromoResource")
 public class PromoResource {
     private final PromoService promoService;
 
